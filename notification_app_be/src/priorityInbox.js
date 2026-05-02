@@ -37,12 +37,14 @@ function isUnread(notification) {
 function scoreNotification(notification, nowMs) {
   const type = normalizeType(notification.type || notification.category);
   const weight = WEIGHTS[type] || 0;
-  const createdAt = toTimestamp(notification.createdAt || notification.created_at);
-  const ageMinutes = Math.max(0, Math.floor((nowMs - createdAt) / 60000));
-  const recencyFactor = 1 / (ageMinutes + 1);
+  const createdAt = toTimestamp(
+    notification.createdAt ||
+      notification.created_at ||
+      notification.Timestamp ||
+      notification.timestamp
+  );
 
   return {
-    score: weight * recencyFactor,
     weight,
     createdAt,
   };
@@ -81,14 +83,13 @@ async function getPriorityInbox(accessToken, limit = 10) {
       return {
         ...notification,
         weight: scoring.weight,
-        score: scoring.score,
         createdAt: scoring.createdAt,
       };
     });
 
     unread.sort((a, b) => {
-      if (b.score !== a.score) {
-        return b.score - a.score;
+      if (b.weight !== a.weight) {
+        return b.weight - a.weight;
       }
 
       return b.createdAt - a.createdAt;

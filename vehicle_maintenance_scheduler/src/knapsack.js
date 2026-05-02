@@ -13,6 +13,7 @@ function solveKnapsack(items, capacity) {
 
   const count = normalizedItems.length;
   const dp = Array.from({ length: count + 1 }, () => Array(maxCapacity + 1).fill(0));
+  const dpDuration = Array.from({ length: count + 1 }, () => Array(maxCapacity + 1).fill(0));
   const keep = Array.from({ length: count + 1 }, () => Array(maxCapacity + 1).fill(false));
 
   for (let i = 1; i <= count; i += 1) {
@@ -23,14 +24,24 @@ function solveKnapsack(items, capacity) {
         const take = impact + dp[i - 1][cap - duration];
         const skip = dp[i - 1][cap];
 
+        const takeDuration = dpDuration[i - 1][cap - duration] + duration;
+        const skipDuration = dpDuration[i - 1][cap];
+
         if (take > skip) {
           dp[i][cap] = take;
+          dpDuration[i][cap] = takeDuration;
+          keep[i][cap] = true;
+        } else if (take === skip && takeDuration < skipDuration) {
+          dp[i][cap] = take;
+          dpDuration[i][cap] = takeDuration;
           keep[i][cap] = true;
         } else {
           dp[i][cap] = skip;
+          dpDuration[i][cap] = skipDuration;
         }
       } else {
         dp[i][cap] = dp[i - 1][cap];
+        dpDuration[i][cap] = dpDuration[i - 1][cap];
       }
     }
   }

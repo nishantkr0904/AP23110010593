@@ -135,6 +135,10 @@ Synchronous loops over 50,000 students risk timeouts and partial failures.
 
 Use a message queue with a worker pool. The API publishes one job per student and returns immediately. Workers handle retries with exponential backoff and a dead-letter queue.
 
+### Idempotency Safeguard
+
+Maintain a `sent_logs` table keyed by `(notification_id, student_id)` or a unique `message_id`. The worker checks for an existing entry before sending and inserts on success to prevent duplicate delivery during retries.
+
 ### Pseudocode
 
 ```text
