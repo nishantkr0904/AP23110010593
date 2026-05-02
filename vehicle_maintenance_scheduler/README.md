@@ -16,6 +16,11 @@ Create a local env file from the example and set tokens:
 cp .env.example .env
 ```
 
+Required env vars:
+
+- `EVAL_ACCESS_TOKEN`
+- `LOG_AUTH_TOKEN`
+
 ## Run
 
 ```bash
