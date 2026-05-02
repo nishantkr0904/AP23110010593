@@ -1,10 +1,6 @@
 # Notification Backend Service
 
-Backend utilities and modules for the campus notifications system, including the Priority Inbox logic.
-
-## Modules
-
-- `src/priorityInbox.js`: Fetches notifications, filters unread, scores by weight + recency, and returns the top 10.
+Backend service for the campus notifications system, including Stage 6 Priority Inbox logic.
 
 ## Environment
 
@@ -13,6 +9,43 @@ Provide credentials via a local `.env` (not committed):
 - `EVAL_ACCESS_TOKEN` for external API access.
 - `LOG_AUTH_TOKEN` for the logging middleware.
 
-## Usage
+## Run
 
-This folder currently exports reusable logic. Integrate it into an Express route or service layer as needed.
+```bash
+npm install
+npm start
+```
+
+## Endpoints
+
+- `GET /health`
+- `GET /notifications/priority?limit=10`
+  - Response:
+    ```json
+    {
+      "notifications": [
+        {
+          "id": "...",
+          "type": "Placement",
+          "priority_score": 9.5,
+          "message": "..."
+        }
+      ]
+    }
+    ```
+- `PATCH /notifications/:id/read`
+  - Request body:
+    ```json
+    { "isRead": true }
+    ```
+- `POST /notifications/notify-all`
+  - Request body:
+    ```json
+    { "message": "Placement drive starting tomorrow", "target": "all_students" }
+    ```
+
+## Notes
+
+- Priority scoring blends type weight and recency (last 48 hours).
+- Read status is tracked in memory for evaluator flows.
+- Legacy `GET /priority-inbox` is retained for compatibility.

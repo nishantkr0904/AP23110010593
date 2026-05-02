@@ -30,10 +30,27 @@ npm start
 ## Endpoints
 
 - GET /health
-- GET /schedule
+- GET /get-optimized-schedule
+
+Response:
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "depotID": 1,
+      "totalImpact": 15,
+      "totalHoursUsed": 58,
+      "tasksScheduled": ["264e638f-...", "73ce9dca-..."]
+    }
+  ]
+}
+```
 
 ## Notes
 
 - All logs are sent through the shared logging middleware.
 - External data is fetched from the evaluation APIs at request time.
 - Requires Node.js 18+ for native `fetch` support.
+- Legacy `GET /schedule` is retained for compatibility.

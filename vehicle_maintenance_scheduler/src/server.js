@@ -6,6 +6,10 @@ const { router } = require("./routes/scheduleRoutes");
 const app = express();
 
 app.use(express.json({ limit: "1mb" }));
+app.use((req, res, next) => {
+  Log("backend", "info", "route", `Incoming ${req.method} ${req.originalUrl}`);
+  next();
+});
 app.use("/", router);
 
 app.use((err, req, res, next) => {

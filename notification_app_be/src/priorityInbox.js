@@ -22,7 +22,11 @@ function normalizeType(rawType) {
   return String(rawType).toLowerCase();
 }
 
-function isUnread(notification) {
+function isUnread(notification, readIds) {
+  if (readIds && readIds.has(notification.id)) {
+    return false;
+  }
+
   if (typeof notification.isRead === "boolean") {
     return notification.isRead === false;
   }
@@ -44,9 +48,15 @@ function scoreNotification(notification, nowMs) {
       notification.timestamp
   );
 
+  // Blend type weight with recency to rank the inbox.
+  const ageHours = createdAt > 0 ? (nowMs - createdAt) / (60 * 60 * 1000) : 9999;
+  const recencyScore = Math.max(0, 1 - ageHours / 48);
+  const priorityScore = weight * 3 + recencyScore;
+
   return {
     weight,
     createdAt,
+    priorityScore,
   };
 }
 
@@ -71,19 +81,20 @@ async function fetchNotifications(accessToken) {
   return response.json();
 }
 
-async function getPriorityInbox(accessToken, limit = 10) {
+async function getPriorityInbox(accessToken, limit = 10, readIds = new Set()) {
   try {
     const payload = await fetchNotifications(accessToken);
     const items = Array.isArray(payload) ? payload : payload.items || [];
     const nowMs = Date.now();
 
-    const unread = items.filter(isUnread).map((notification) => {
+    const unread = items.filter((notification) => isUnread(notification, readIds)).map((notification) => {
       const scoring = scoreNotification(notification, nowMs);
 
       return {
         ...notification,
         weight: scoring.weight,
         createdAt: scoring.createdAt,
+        priorityScore: scoring.priorityScore,
       };
     });
 

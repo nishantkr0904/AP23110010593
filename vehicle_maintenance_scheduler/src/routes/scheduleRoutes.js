@@ -9,16 +9,19 @@ router.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-router.get("/schedule", async (req, res) => {
+async function handleSchedule(req, res) {
   try {
     Log("backend", "info", "route", "Schedule request received");
-    const payload = await buildSchedule(EVAL_ACCESS_TOKEN);
-    res.status(200).json(payload);
+    const data = await buildSchedule(EVAL_ACCESS_TOKEN);
+    return res.status(200).json({ status: "success", data });
   } catch (error) {
     Log("backend", "error", "route", "Schedule request failed");
-    res.status(500).json({ error: "Unable to compute schedule" });
+    return res.status(500).json({ error: "Unable to compute schedule" });
   }
-});
+}
+
+router.get("/get-optimized-schedule", handleSchedule);
+router.get("/schedule", handleSchedule);
 
 module.exports = {
   router,

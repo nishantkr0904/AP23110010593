@@ -4,16 +4,20 @@ const { solveKnapsack } = require("./knapsack");
 
 function normalizeDepot(depot) {
   return {
-    id: depot.id ?? depot.depotId ?? depot.depot_id,
-    mechanicHours: depot.mechanicHours ?? depot.hours ?? depot.availableHours,
+    id: depot.id ?? depot.depotId ?? depot.depot_id ?? depot.ID,
+    mechanicHours:
+      depot.mechanicHours ??
+      depot.hours ??
+      depot.availableHours ??
+      depot.MechanicHours,
   };
 }
 
 function normalizeVehicle(vehicle) {
   return {
-    id: vehicle.id ?? vehicle.taskId ?? vehicle.task_id,
-    duration: vehicle.duration ?? vehicle.hours ?? vehicle.timeRequired,
-    impact: vehicle.impact ?? vehicle.impactScore ?? vehicle.value,
+    id: vehicle.id ?? vehicle.taskId ?? vehicle.task_id ?? vehicle.TaskID,
+    duration: vehicle.duration ?? vehicle.hours ?? vehicle.timeRequired ?? vehicle.Duration,
+    impact: vehicle.impact ?? vehicle.impactScore ?? vehicle.value ?? vehicle.Impact,
   };
 }
 
@@ -28,27 +32,27 @@ async function buildSchedule(accessToken) {
   const depots = Array.isArray(depotsRaw) ? depotsRaw.map(normalizeDepot) : [];
   const vehicles = Array.isArray(vehiclesRaw) ? vehiclesRaw.map(normalizeVehicle) : [];
 
+  // Greedy allocation: remove scheduled tasks so depots do not share the same task.
+  let remainingVehicles = [...vehicles];
   const schedule = depots.map((depot) => {
-    const result = solveKnapsack(vehicles, depot.mechanicHours);
+    const result = solveKnapsack(remainingVehicles, depot.mechanicHours);
+    const selectedIds = new Set(result.selected.map((task) => task.id));
+
+    remainingVehicles = remainingVehicles.filter((task) => !selectedIds.has(task.id));
+
+    const totalHoursUsed = result.selected.reduce((sum, task) => sum + task.duration, 0);
 
     return {
-      depotId: depot.id,
-      mechanicHours: depot.mechanicHours,
+      depotID: depot.id,
       totalImpact: result.totalImpact,
-      tasks: result.selected.map((task) => ({
-        taskId: task.id,
-        duration: task.duration,
-        impact: task.impact,
-      })),
+      totalHoursUsed,
+      tasksScheduled: result.selected.map((task) => task.id),
     };
   });
 
   Log("backend", "info", "service", "Completed depot scheduling run");
 
-  return {
-    generatedAt: new Date().toISOString(),
-    schedule,
-  };
+  return schedule;
 }
 
 module.exports = {
