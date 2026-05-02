@@ -1,3 +1,34 @@
 # Vehicle Maintenance Scheduler
 
-Placeholder scheduler application folder.
+Backend microservice to compute optimal maintenance task schedules per depot using a 0/1 knapsack solver.
+
+## Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create a local env file from the example and set tokens:
+
+```bash
+cp .env.example .env
+```
+
+## Run
+
+```bash
+npm start
+```
+
+## Endpoints
+
+- GET /health
+- GET /schedule
+
+## Notes
+
+- All logs are sent through the shared logging middleware.
+- External data is fetched from the evaluation APIs at request time.
+- Requires Node.js 18+ for native `fetch` support.
